@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Test Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+        .speed-display {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .speed-value {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+            font-variant-numeric: tabular-nums;
+        }
+        .speed-label {
+            color: #666;
+            font-size: 1.2em;
+        }
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .result-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .result-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #764ba2;
+            margin: 5px 0;
+            font-variant-numeric: tabular-nums;
+        }
+        .result-label {
+            color: #666;
+            font-size: 0.85em;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        .start-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .start-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .start-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status {
+            text-align: center;
+            color: #666;
+            margin: 15px 0;
+            font-style: italic;
+            min-height: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .stats {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.85em;
+            color: #666;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .server-input {
+            margin-bottom: 20px;
+        }
+        .server-input input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        .server-input label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Speed Test Pro</h1>
+        <div class="subtitle">Kiểm tra tốc độ mạng chính xác cao</div>
+        
+        <div class="server-input">
+            <label>🌐 Backend Server URL:</label>
+            <input type="text" id="serverUrl" placeholder="https://your-backend.onrender.com" 
+                   value="https://your-backend.onrender.com">
+        </div>
+
+        <div class="speed-display">
+            <div class="speed-label">Download Speed</div>
+            <div class="speed-value" id="downloadSpeed">0.00</div>
+            <div class="speed-label">Mbps</div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div class="results">
+            <div class="result-box">
+                <div class="result-label">Upload</div>
+                <div class="result-value" id="uploadSpeed">0.00</div>
+                <div class="result-label" style="font-size: 0.75em;">Mbps</div>
+            </div>
+            <div class="result-box">
+                <div class="result-label">Ping</div>
+                <div class="result-value" id="ping">0</div>
+                <div class="result-label" style="font-size: 0.75em;">ms</div>
+            </div>
+            <div class="result-box">
+                <div class="result-label">Jitter</div>
+                <div class="result-value" id="jitter">0</div>
+                <div class="result-label" style="font-size: 0.75em;">ms</div>
+            </div>
+        </div>
+
+        <div class="status" id="status">Nhập Backend URL và nhấn Start</div>
+        
+        <button class="start-btn" id="startBtn" onclick="startTest()">
+            Start Test
+        </button>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stats-row">
+                <span>Số lần test:</span>
+                <span id="iterations">-</span>
+            </div>
+            <div class="stats-row">
+                <span>Dữ liệu tải xuống:</span>
+                <span id="dataDown">-</span>
+            </div>
+            <div class="stats-row">
+                <span>Dữ liệu tải lên:</span>
+                <span id="dataUp">-</span>
+            </div>
+            <div class="stats-row">
+                <span>Thời gian test:</span>
+                <span id="testTime">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+
+        // Lưu server URL vào localStorage
+        const serverUrlInput = document.getElementById('serverUrl');
+        const savedUrl = localStorage.getItem('serverUrl');
+        if (savedUrl) {
+            serverUrlInput.value = savedUrl;
+        }
+
+        serverUrlInput.addEventListener('change', () => {
+            localStorage.setItem('serverUrl', serverUrlInput.value);
+        });
+
+        async function startTest() {
+            if (isRunning) return;
+            
+            const API_URL = serverUrlInput.value.trim().replace(/\/$/, '');
+            
+            if (!API_URL) {
+                alert('Vui lòng nhập Backend Server URL!');
+                return;
+            }
+
+            isRunning = true;
+            const btn = document.getElementById('startBtn');
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+            
+            document.getElementById('downloadSpeed').textContent = '0.00';
+            document.getElementById('uploadSpeed').textContent = '0.00';
+            document.getElementById('ping').textContent = '0';
+            document.getElementById('jitter').textContent = '0';
+            document.getElementById('stats').style.display = 'none';
+            
+            const startTime = Date.now();
+            let totalDownload = 0;
+            let totalUpload = 0;
+            let iterations = 0;
+
+            try {
+                const pingResults = await testPing(API_URL);
+                iterations++;
+                
+                const downloadResults = await testDownload(API_URL);
+                totalDownload = downloadResults.totalBytes;
+                iterations += downloadResults.iterations;
+                
+                const uploadResults = await testUpload(API_URL);
+                totalUpload = uploadResults.totalBytes;
+                iterations += uploadResults.iterations;
+                
+                const endTime = Date.now();
+                const totalTime = ((endTime - startTime) / 1000).toFixed(1);
+
+                document.getElementById('status').textContent = '✅ Kiểm tra hoàn tất!';
+                document.getElementById('stats').style.display = 'block';
+                document.getElementById('iterations').textContent = iterations;
+                document.getElementById('dataDown').textContent = (totalDownload / (1024 * 1024)).toFixed(2) + ' MB';
+                document.getElementById('dataUp').textContent = (totalUpload / (1024 * 1024)).toFixed(2) + ' MB';
+                document.getElementById('testTime').textContent = totalTime + 's';
+                
+            } catch (error) {
+                document.getElementById('status').textContent = '❌ Lỗi: ' + error.message;
+                console.error(error);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Test Again';
+            isRunning = false;
+        }
+
+        async function testPing(API_URL) {
+            document.getElementById('status').textContent = '📡 Đang kiểm tra ping...';
+            document.getElementById('progress').style.width = '10%';
+            
+            const iterations = 10;
+            const pings = [];
+
+            for (let i = 0; i < iterations; i++) {
+                const start = performance.now();
+                await fetch(API_URL + '/ping?t=' + Date.now());
+                const end = performance.now();
+                pings.push(end - start);
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            pings.sort((a, b) => a - b);
+            const trimCount = Math.floor(iterations * 0.2);
+            const trimmedPings = pings.slice(trimCount, iterations - trimCount);
+
+            const avgPing = Math.round(trimmedPings.reduce((a, b) => a + b, 0) / trimmedPings.length);
+            
+            let jitterSum = 0;
+            for (let i = 1; i < trimmedPings.length; i++) {
+                jitterSum += Math.abs(trimmedPings[i] - trimmedPings[i - 1]);
+            }
+            const jitter = Math.round(jitterSum / (trimmedPings.length - 1));
+
+            document.getElementById('ping').textContent = avgPing;
+            document.getElementById('jitter').textContent = jitter;
+            
+            return { avgPing, jitter };
+        }
+
+        async function testDownload(API_URL) {
+            document.getElementById('status').textContent = '⬇️ Đang test download...';
+            
+            const sizes = [1, 2, 5, 10, 20];
+            const speeds = [];
+            let totalBytes = 0;
+            let maxSpeed = 0;
+
+            for (let i = 0; i < sizes.length; i++) {
+                const size = sizes[i];
+                const progress = 10 + ((i + 1) / sizes.length) * 40;
+                document.getElementById('progress').style.width = progress + '%';
+
+                for (let j = 0; j < 2; j++) {
+                    const start = performance.now();
+                    const response = await fetch(API_URL + '/download?size=' + size + '&t=' + Date.now());
+                    const data = await response.arrayBuffer();
+                    const end = performance.now();
+
+                    const duration = (end - start) / 1000;
+                    const bytes = data.byteLength;
+                    totalBytes += bytes;
+                    const bits = bytes * 8;
+                    const speedMbps = (bits / duration / 1000000);
+                    
+                    speeds.push(speedMbps);
+                    
+                    if (speedMbps > maxSpeed) {
+                        maxSpeed = speedMbps;
+                        document.getElementById('downloadSpeed').textContent = speedMbps.toFixed(2);
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+            }
+
+            speeds.sort((a, b) => a - b);
+            const trimCount = Math.floor(speeds.length * 0.2);
+            const trimmedSpeeds = speeds.slice(trimCount, speeds.length - trimCount);
+            const avgSpeed = trimmedSpeeds.reduce((a, b) => a + b, 0) / trimmedSpeeds.length;
+            
+            document.getElementById('downloadSpeed').textContent = avgSpeed.toFixed(2);
+
+            return { 
+                avgSpeed, 
+                maxSpeed, 
+                totalBytes,
+                iterations: sizes.length * 2 
+            };
+        }
+
+        async function testUpload(API_URL) {
+            document.getElementById('status').textContent = '⬆️ Đang test upload...';
+            
+            const sizes = [0.5, 1, 2, 5, 10];
+            const speeds = [];
+            let totalBytes = 0;
+            let maxSpeed = 0;
+
+            for (let i = 0; i < sizes.length; i++) {
+                const size = sizes[i];
+                const progress = 50 + ((i + 1) / sizes.length) * 45;
+                document.getElementById('progress').style.width = progress + '%';
+
+                for (let j = 0; j < 2; j++) {
+                    const bytes = size * 1024 * 1024;
+                    const data = new Uint8Array(bytes);
+                    
+                    for (let k = 0; k < bytes; k++) {
+                        data[k] = Math.random() * 256;
+                    }
+                    
+                    const start = performance.now();
+                    await fetch(API_URL + '/upload', {
+                        method: 'POST',
+                        body: data.buffer,
+                        headers: {
+                            'Content-Type': 'application/octet-stream'
+                        }
+                    });
+                    const end = performance.now();
+
+                    const duration = (end - start) / 1000;
+                    totalBytes += bytes;
+                    const bits = bytes * 8;
+                    const speedMbps = (bits / duration / 1000000);
+                    
+                    speeds.push(speedMbps);
+                    
+                    if (speedMbps > maxSpeed) {
+                        maxSpeed = speedMbps;
+                        document.getElementById('uploadSpeed').textContent = speedMbps.toFixed(2);
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+            }
+
+            speeds.sort((a, b) => a - b);
+            const trimCount = Math.floor(speeds.length * 0.2);
+            const trimmedSpeeds = speeds.slice(trimCount, speeds.length - trimCount);
+            const avgSpeed = trimmedSpeeds.reduce((a, b) => a + b, 0) / trimmedSpeeds.length;
+            
+            document.getElementById('uploadSpeed').textContent = avgSpeed.toFixed(2);
+            document.getElementById('progress').style.width = '100%';
+
+            return { 
+                avgSpeed, 
+                maxSpeed, 
+                totalBytes,
+                iterations: sizes.length * 2 
+            };
+        }
+    </script>
+</body>
+</html>
