@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speed Test Pro</title>
+    <title>Speed Test - GitHub Only</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,7 @@
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 600px;
+            max-width: 650px;
             width: 100%;
         }
         h1 {
@@ -38,6 +38,15 @@
             color: #666;
             margin-bottom: 30px;
             font-size: 0.9em;
+        }
+        .badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-bottom: 20px;
         }
         .speed-display {
             text-align: center;
@@ -135,33 +144,35 @@
             justify-content: space-between;
             margin: 5px 0;
         }
-        .server-input {
-            margin-bottom: 20px;
-        }
-        .server-input input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
+        .server-info {
+            background: #e3f2fd;
+            padding: 10px 15px;
             border-radius: 8px;
-            font-size: 0.9em;
+            margin-bottom: 20px;
+            font-size: 0.85em;
+            color: #1976d2;
         }
-        .server-input label {
-            display: block;
-            margin-bottom: 5px;
-            color: #666;
-            font-size: 0.9em;
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.85em;
+            color: #856404;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Speed Test Pro</h1>
-        <div class="subtitle">Kiểm tra tốc độ mạng chính xác cao</div>
+        <div style="text-align: center;">
+            <span class="badge">✨ 100% GitHub Pages - No Backend</span>
+        </div>
+        <h1>🚀 Speed Test</h1>
+        <div class="subtitle">Test tốc độ mạng qua CDN công khai</div>
         
-        <div class="server-input">
-            <label>🌐 Backend Server URL:</label>
-            <input type="text" id="serverUrl" placeholder="https://your-backend.onrender.com" 
-                   value="https://your-backend.onrender.com">
+        <div class="server-info">
+            📡 Test server: Cloudflare CDN, Google Cloud, AWS CloudFront
         </div>
 
         <div class="speed-display">
@@ -177,7 +188,7 @@
         <div class="results">
             <div class="result-box">
                 <div class="result-label">Upload</div>
-                <div class="result-value" id="uploadSpeed">0.00</div>
+                <div class="result-value" id="uploadSpeed">~</div>
                 <div class="result-label" style="font-size: 0.75em;">Mbps</div>
             </div>
             <div class="result-box">
@@ -192,7 +203,7 @@
             </div>
         </div>
 
-        <div class="status" id="status">Nhập Backend URL và nhấn Start</div>
+        <div class="status" id="status">Nhấn Start để bắt đầu kiểm tra</div>
         
         <button class="start-btn" id="startBtn" onclick="startTest()">
             Start Test
@@ -208,76 +219,89 @@
                 <span id="dataDown">-</span>
             </div>
             <div class="stats-row">
-                <span>Dữ liệu tải lên:</span>
-                <span id="dataUp">-</span>
+                <span>CDN servers:</span>
+                <span id="servers">-</span>
             </div>
             <div class="stats-row">
                 <span>Thời gian test:</span>
                 <span id="testTime">-</span>
             </div>
         </div>
+
+        <div class="note">
+            <strong>💡 Lưu ý:</strong> Upload test không khả dụng (cần backend). Download test sử dụng các CDN công khai để đo tốc độ chính xác.
+        </div>
     </div>
 
     <script>
         let isRunning = false;
 
-        // Lưu server URL vào localStorage
-        const serverUrlInput = document.getElementById('serverUrl');
-        const savedUrl = localStorage.getItem('serverUrl');
-        if (savedUrl) {
-            serverUrlInput.value = savedUrl;
-        }
-
-        serverUrlInput.addEventListener('change', () => {
-            localStorage.setItem('serverUrl', serverUrlInput.value);
-        });
+        // Danh sách các file test từ CDN công khai
+        const testFiles = [
+            // Cloudflare CDN - jQuery
+            { url: 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js', size: 0.085, name: 'Cloudflare' },
+            
+            // Google CDN
+            { url: 'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js', size: 0.085, name: 'Google' },
+            
+            // jsDelivr CDN
+            { url: 'https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js', size: 0.085, name: 'jsDelivr' },
+            
+            // Cloudflare - Bootstrap (larger)
+            { url: 'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/js/bootstrap.bundle.min.js', size: 0.058, name: 'Cloudflare' },
+            
+            // Unpkg CDN - React
+            { url: 'https://unpkg.com/react@18/umd/react.production.min.js', size: 0.012, name: 'Unpkg' },
+            
+            // Cloudflare - Three.js (much larger)
+            { url: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', size: 0.59, name: 'Cloudflare' },
+            
+            // jsDelivr - Vue (larger)
+            { url: 'https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js', size: 0.14, name: 'jsDelivr' },
+            
+            // Larger files for better accuracy
+            { url: 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js', size: 0.072, name: 'Cloudflare' },
+            { url: 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', size: 0.24, name: 'jsDelivr' },
+            { url: 'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js', size: 0.27, name: 'Cloudflare' },
+        ];
 
         async function startTest() {
             if (isRunning) return;
             
-            const API_URL = serverUrlInput.value.trim().replace(/\/$/, '');
-            
-            if (!API_URL) {
-                alert('Vui lòng nhập Backend Server URL!');
-                return;
-            }
-
             isRunning = true;
             const btn = document.getElementById('startBtn');
             btn.disabled = true;
             btn.textContent = 'Testing...';
             
             document.getElementById('downloadSpeed').textContent = '0.00';
-            document.getElementById('uploadSpeed').textContent = '0.00';
+            document.getElementById('uploadSpeed').textContent = '~';
             document.getElementById('ping').textContent = '0';
             document.getElementById('jitter').textContent = '0';
             document.getElementById('stats').style.display = 'none';
             
             const startTime = Date.now();
             let totalDownload = 0;
-            let totalUpload = 0;
             let iterations = 0;
 
             try {
-                const pingResults = await testPing(API_URL);
+                await testPing();
                 iterations++;
                 
-                const downloadResults = await testDownload(API_URL);
+                const downloadResults = await testDownload();
                 totalDownload = downloadResults.totalBytes;
                 iterations += downloadResults.iterations;
                 
-                const uploadResults = await testUpload(API_URL);
-                totalUpload = uploadResults.totalBytes;
-                iterations += uploadResults.iterations;
-                
                 const endTime = Date.now();
                 const totalTime = ((endTime - startTime) / 1000).toFixed(1);
+
+                // Get unique server names
+                const uniqueServers = [...new Set(testFiles.map(f => f.name))];
 
                 document.getElementById('status').textContent = '✅ Kiểm tra hoàn tất!';
                 document.getElementById('stats').style.display = 'block';
                 document.getElementById('iterations').textContent = iterations;
                 document.getElementById('dataDown').textContent = (totalDownload / (1024 * 1024)).toFixed(2) + ' MB';
-                document.getElementById('dataUp').textContent = (totalUpload / (1024 * 1024)).toFixed(2) + ' MB';
+                document.getElementById('servers').textContent = uniqueServers.join(', ');
                 document.getElementById('testTime').textContent = totalTime + 's';
                 
             } catch (error) {
@@ -290,16 +314,36 @@
             isRunning = false;
         }
 
-        async function testPing(API_URL) {
+        async function testPing() {
             document.getElementById('status').textContent = '📡 Đang kiểm tra ping...';
             document.getElementById('progress').style.width = '10%';
             
             const iterations = 10;
             const pings = [];
 
+            // Test ping to multiple CDNs
+            const pingUrls = [
+                'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js',
+                'https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js',
+                'https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js'
+            ];
+
             for (let i = 0; i < iterations; i++) {
+                const url = pingUrls[i % pingUrls.length];
                 const start = performance.now();
-                await fetch(API_URL + '/ping?t=' + Date.now());
+                
+                try {
+                    await fetch(url, { 
+                        method: 'HEAD',
+                        cache: 'no-store'
+                    });
+                } catch (e) {
+                    // Fallback to GET if HEAD not supported
+                    await fetch(url + '?t=' + Date.now(), { 
+                        cache: 'no-store' 
+                    });
+                }
+                
                 const end = performance.now();
                 pings.push(end - start);
                 await new Promise(resolve => setTimeout(resolve, 100));
@@ -323,117 +367,69 @@
             return { avgPing, jitter };
         }
 
-        async function testDownload(API_URL) {
-            document.getElementById('status').textContent = '⬇️ Đang test download...';
+        async function testDownload() {
+            document.getElementById('status').textContent = '⬇️ Đang test download từ CDN...';
             
-            const sizes = [1, 2, 5, 10, 20];
             const speeds = [];
             let totalBytes = 0;
             let maxSpeed = 0;
+            let testCount = 0;
 
-            for (let i = 0; i < sizes.length; i++) {
-                const size = sizes[i];
-                const progress = 10 + ((i + 1) / sizes.length) * 40;
+            // Test each file multiple times
+            for (let i = 0; i < testFiles.length; i++) {
+                const file = testFiles[i];
+                const progress = 10 + ((i + 1) / testFiles.length) * 85;
                 document.getElementById('progress').style.width = progress + '%';
 
+                // Test each file 2 times for accuracy
                 for (let j = 0; j < 2; j++) {
-                    const start = performance.now();
-                    const response = await fetch(API_URL + '/download?size=' + size + '&t=' + Date.now());
-                    const data = await response.arrayBuffer();
-                    const end = performance.now();
+                    try {
+                        const start = performance.now();
+                        const response = await fetch(file.url + '?t=' + Date.now(), {
+                            cache: 'no-store'
+                        });
+                        const data = await response.arrayBuffer();
+                        const end = performance.now();
 
-                    const duration = (end - start) / 1000;
-                    const bytes = data.byteLength;
-                    totalBytes += bytes;
-                    const bits = bytes * 8;
-                    const speedMbps = (bits / duration / 1000000);
-                    
-                    speeds.push(speedMbps);
-                    
-                    if (speedMbps > maxSpeed) {
-                        maxSpeed = speedMbps;
-                        document.getElementById('downloadSpeed').textContent = speedMbps.toFixed(2);
+                        const duration = (end - start) / 1000;
+                        const bytes = data.byteLength;
+                        totalBytes += bytes;
+                        const bits = bytes * 8;
+                        const speedMbps = (bits / duration / 1000000);
+                        
+                        speeds.push(speedMbps);
+                        testCount++;
+                        
+                        if (speedMbps > maxSpeed) {
+                            maxSpeed = speedMbps;
+                            document.getElementById('downloadSpeed').textContent = speedMbps.toFixed(2);
+                        }
+                        
+                        await new Promise(resolve => setTimeout(resolve, 150));
+                    } catch (error) {
+                        console.warn(`Failed to test ${file.name}:`, error);
                     }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 200));
                 }
             }
 
+            if (speeds.length === 0) {
+                throw new Error('Không thể kết nối đến CDN servers');
+            }
+
+            // Remove outliers and calculate average
             speeds.sort((a, b) => a - b);
-            const trimCount = Math.floor(speeds.length * 0.2);
+            const trimCount = Math.floor(speeds.length * 0.15);
             const trimmedSpeeds = speeds.slice(trimCount, speeds.length - trimCount);
             const avgSpeed = trimmedSpeeds.reduce((a, b) => a + b, 0) / trimmedSpeeds.length;
             
             document.getElementById('downloadSpeed').textContent = avgSpeed.toFixed(2);
-
-            return { 
-                avgSpeed, 
-                maxSpeed, 
-                totalBytes,
-                iterations: sizes.length * 2 
-            };
-        }
-
-        async function testUpload(API_URL) {
-            document.getElementById('status').textContent = '⬆️ Đang test upload...';
-            
-            const sizes = [0.5, 1, 2, 5, 10];
-            const speeds = [];
-            let totalBytes = 0;
-            let maxSpeed = 0;
-
-            for (let i = 0; i < sizes.length; i++) {
-                const size = sizes[i];
-                const progress = 50 + ((i + 1) / sizes.length) * 45;
-                document.getElementById('progress').style.width = progress + '%';
-
-                for (let j = 0; j < 2; j++) {
-                    const bytes = size * 1024 * 1024;
-                    const data = new Uint8Array(bytes);
-                    
-                    for (let k = 0; k < bytes; k++) {
-                        data[k] = Math.random() * 256;
-                    }
-                    
-                    const start = performance.now();
-                    await fetch(API_URL + '/upload', {
-                        method: 'POST',
-                        body: data.buffer,
-                        headers: {
-                            'Content-Type': 'application/octet-stream'
-                        }
-                    });
-                    const end = performance.now();
-
-                    const duration = (end - start) / 1000;
-                    totalBytes += bytes;
-                    const bits = bytes * 8;
-                    const speedMbps = (bits / duration / 1000000);
-                    
-                    speeds.push(speedMbps);
-                    
-                    if (speedMbps > maxSpeed) {
-                        maxSpeed = speedMbps;
-                        document.getElementById('uploadSpeed').textContent = speedMbps.toFixed(2);
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                }
-            }
-
-            speeds.sort((a, b) => a - b);
-            const trimCount = Math.floor(speeds.length * 0.2);
-            const trimmedSpeeds = speeds.slice(trimCount, speeds.length - trimCount);
-            const avgSpeed = trimmedSpeeds.reduce((a, b) => a + b, 0) / trimmedSpeeds.length;
-            
-            document.getElementById('uploadSpeed').textContent = avgSpeed.toFixed(2);
             document.getElementById('progress').style.width = '100%';
 
             return { 
                 avgSpeed, 
                 maxSpeed, 
                 totalBytes,
-                iterations: sizes.length * 2 
+                iterations: testCount 
             };
         }
     </script>
